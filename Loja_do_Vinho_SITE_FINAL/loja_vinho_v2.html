@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="pt-BR" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loja do Vinho - Vale do São Francisco</title>
+    <style>
+        :root { 
+            --vinho: #5C061A; 
+            --dourado: #D4AF37; 
+            --fundo: #FDFBF7; 
+            --texto: #2C2C2C; 
+            --verde: #25D366; 
+        }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; padding-top: 165px; /* Aumentado para dar espaço à logo maior fixa */
+            background-color: var(--fundo); 
+            color: var(--texto); 
+        }
+        .modal-idade { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background-color: rgba(26,2,6,0.99); 
+            display: flex; justify-content: center; align-items: center; 
+            z-index: 100000; 
+        }
+        .conteudo-modal-idade { 
+            background: white; padding: 30px 20px; border-radius: 12px; 
+            text-align: center; width: 88%; max-width: 380px; 
+            border: 2px solid var(--dourado); 
+        }
+        .botoes-idade { display: flex; gap: 12px; width: 100%; margin-top: 15px; }
+        .botoes-idade button { flex: 1; padding: 14px 10px; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; }
+        .btn-idade-sim { background-color: var(--vinho) !important; color: white !important; }
+        .btn-idade-nao { background-color: #eee !important; color: #555 !important; }
+        
+        /* CABEÇALHO FIXO COM LOGO AMPLIADA */
+        header { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 160px;
+            background: linear-gradient(135deg, #3A020F 0%, var(--vinho) 100%); 
+            color: white; text-align: center; padding: 15px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); z-index: 999;
+            box-sizing: border-box;
+        }
+        .logo-loja { max-height: 75px; width: auto; display: block; margin: 0 auto 5px auto; }
+        .subtitulo-header { font-size: 0.85rem; margin: 2px 0; color: #F5F3EF; font-style: italic; }
+
+        .menu-categorias-horizontal { position: fixed; top: 160px; left: 0; width: 100%; background-color: #1A1A1A; border-bottom: 3px solid var(--dourado); padding: 8px 0; z-index: 998; }
+        .scroll-filtros { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; gap: 10px; overflow-x: auto; white-space: nowrap; }
+        .scroll-filtros::-webkit-scrollbar { display: none; }
+        .btn-filtro-tipo { background-color: transparent; border: 1px solid #444; color: #ccc; padding: 6px 16px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 0.85rem; }
+        .btn-filtro-tipo:hover, .btn-filtro-tipo.ativo { background-color: var(--vinho); color: white; border-color: var(--vinho); }
+        
+        .area-busca-loja { max-width: 1200px; margin: 55px auto 0 auto; padding: 0 20px; }
+        #busca-loja { width: 100%; padding: 14px 20px; font-size: 1rem; border: 2px solid #ECE9E2; border-radius: 30px; outline: none; box-sizing: border-box; }
+        
+        .container { max-width: 1200px; margin: 20px auto; display: grid; grid-template-columns: 2.5fr 1fr; gap: 25px; padding: 0 20px; }
+        .vitrine { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        /* DESIGN DO CARRINHO TRAVADO COM ROLAGEM INTERNA */
+        .carrinho-container { background: white; border: 1px solid #ECE9E2; border-radius: 12px; padding: 20px; height: fit-content; position: sticky; top: 235px; box-sizing: border-box; }
+        
+        #itens-carrinho { 
+            max-height: 240px; /* Trava exatamente em até 5 itens visíveis */
+            overflow-y: auto; 
+            padding-right: 5px;
+        }
+        #itens-carrinho::-webkit-scrollbar { width: 4px; }
+        #itens-carrinho::-webkit-scrollbar-thumb { background: var(--vinho); border-radius: 10px; }
+        
+        .item-no-carrinho { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #F5F3EF; font-size: 0.85rem; align-items: center; }
+        
+        .carrinho-flutuante-topo { position: fixed; top: 15px; right: 20px; background: var(--dourado); color: var(--vinho); padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9rem; z-index: 1001; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 6px; }
+        .whatsapp-flutuante { position: fixed; bottom: 25px; left: 25px; width: 60px; height: 60px; background-color: var(--verde); border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 999; }
+        .whatsapp-svg { width: 35px; height: 35px; fill: white; }
+
+        .destaque-regionais { max-width: 1200px; margin: 28px auto 10px; padding: 0 20px; }
+        .cabecalho-regionais { background: linear-gradient(135deg, #3A020F, #5C061A); color: white; border-radius: 16px; padding: 20px 22px; margin-bottom: 14px; border: 1px solid var(--dourado); box-shadow: 0 8px 24px rgba(92,6,26,.12); }
+        .cabecalho-regionais h2 { margin: 0 0 5px; color: #fff; font-size: 1.35rem; }
+        .cabecalho-regionais p { margin: 0; color: #f6ead0; font-size: .9rem; }
+        .vitrine-regionais { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 15px; }
+        .card-regional { border: 2px solid var(--dourado); box-shadow: 0 7px 18px rgba(92,6,26,.10); }
+        .selo-regional { position:absolute; top:10px; right:10px; background:var(--vinho); color:#fff; padding:4px 8px; border-radius:12px; font-size:.62rem; font-weight:800; z-index:2; }
+        .status-api { max-width:1200px; margin:8px auto 0; padding:0 20px; font-size:.72rem; color:#777; }
+        .status-api.ok { color:#277a43; }
+        .status-api.erro { color:#a33; }
+        @media (max-width: 768px) { .destaque-regionais { margin-top:20px; } .vitrine-regionais { grid-template-columns: repeat(2, 1fr); gap:10px; } }
+        .produto-card { background: white; border: 1px solid #ECE9E2; border-radius: 12px; padding: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; position: relative; box-sizing: border-box; }
+        .foto-produto-vitrine { width: 100%; height: 130px; object-fit: contain; border-radius: 8px; background: #fafafa; padding: 5px; box-sizing: border-box; display: block; margin: 0 auto; }
+        .foto-placeholder-vitrine { width: 100%; height: 130px; background: #f0ede6; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #8c8576; font-weight: bold; font-size: 0.85rem; }
+        .produto-card h3 { font-size: 0.85rem; margin: 6px 0 4px 0; line-height: 1.3; color: var(--texto); min-height: 34px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .vinho-tag { background: var(--dourado); color: var(--vinho); font-size: 0.6rem; font-weight: bold; padding: 2px 6px; border-radius: 10px; width: fit-content; text-transform: uppercase; }
+        .preco { font-size: 1.1rem; font-weight: bold; color: var(--vinho); margin: 4px 0; }
+        .btn-detalhes { background: none; border: none; color: #777; font-size: 0.7rem; text-decoration: underline; cursor: pointer; padding: 4px 0; text-align: left; font-weight: bold; width: 100%; }
+        .detalhes-expansivel { display: none; background: #F9F7F2; padding: 8px; border-radius: 6px; font-size: 0.75rem; color: #555; margin: 6px 0; line-height: 1.4; border: 1px solid #EAE6DF; }
+        .wrapper-botao-compra { height: 36px; margin-top: 6px; width: 100%; position: relative; }
+        .btn-adicionar { background-color: transparent; color: var(--vinho); border: 2px solid var(--vinho); padding: 0; height: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 0.8rem; box-sizing: border-box; }
+        .btn-adicionar:hover { background-color: var(--vinho); color: white; }
+        .seletor-quantidade { display: none; align-items: center; justify-content: space-between; background-color: var(--vinho); color: white; border-radius: 8px; height: 100%; width: 100%; overflow: hidden; font-weight: bold; }
+        .seletor-quantidade button { background: none; border: none; color: white; font-size: 1.1rem; font-weight: bold; width: 30px; height: 100%; cursor: pointer; }
+        .seletor-quantidade span { font-size: 0.9rem; color: white; }
+        .produto-card.no-carrinho { border-color: var(--vinho); box-shadow: 0 4px 12px rgba(92, 6, 26, 0.08); }
+        .produto-card.no-carrinho .btn-adicionar { display: none; }
+        .produto-card.no-carrinho .seletor-quantidade { display: flex; }
+        .formulario-carrinho { background: #FAF9F5; padding: 12px; border-radius: 8px; margin-top: 12px; border: 1px solid #EAE6DF; }
+        .campo-carrinho { margin-bottom: 8px; }
+        .campo-carrinho label { font-size: 0.75rem; font-weight: bold; color: #444; }
+        .campo-carrinho input, .campo-carrinho select { width: 100%; padding: 8px; font-size: 0.85rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; margin-top: 3px; }
+        .btn-aplicar-cupom { background: var(--vinho); color: white; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .total-container { margin: 12px 0; font-weight: bold; }
+        .linha-total { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; }
+        .linha-total.desconto { color: #c0392b; }
+        .linha-total.final { font-size: 1.1rem; margin-top: 6px; border-top: 1px solid #ddd; padding-top: 6px; color: var(--vinho); }
+        .btn-whatsapp { background-color: var(--verde); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-size: 0.9rem; font-weight: bold; cursor: pointer; }
+        footer { text-align: center; padding: 15px; background: #1A1A1A; color: #888; font-size: 0.8rem; margin-top: 40px; }
+        @media (max-width: 768px) { body { padding-top: 210px; } header { height: 160px; } .menu-categorias-horizontal { top: 160px; } .area-busca-loja { margin-top: 30px; } .container { grid-template-columns: 1fr; gap: 20px; } .vitrine { grid-template-columns: repeat(2, 1fr); gap: 10px; } .carrinho-container { position: relative; top: 0; margin-top: 20px; } }
+    </style>
+
+    <!-- Chamada para transformar o site em Aplicativo (PWA) -->
+    <link rel="manifest" href="manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+
+</head>
+<body>
+    <div id="bloqueio-idade" class="modal-idade">
+        <div class="conteudo-modal-idade">
+            <h2>Você tem mais de 18 anos?</h2>
+            <p>O consumo de bebidas alcoólicas é proibido para menores de idade.</p>
+            <div class="botoes-idade">
+                <button onclick="confirmarIdade(true)" class="btn-idade-sim">Sim, tenho</button>
+                <button onclick="confirmarIdade(false)" class="btn-idade-nao">Não</button>
+            </div>
+        </div>
+    </div>
+    
+    <a href="#itens-carrinho" class="carrinho-flutuante-topo">🛒 <span id="contador-flutuante">0</span> itens</a>
+
+    <div id="secao-loja">
+        <header>
+            <img src="logo1.png" alt="Loja do Vinho" class="logo-loja" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block'">
+            <div id="logo-fallback" style="display:none;font-size:2rem;font-weight:900;letter-spacing:.04em">🍷 LOJA DO VINHO</div>
+            <p class="subtitulo-header">📍 Rua Floriano Peixoto, 48, Centro, Juazeiro-BA</p>
+            <p class="subtitulo-header" style="font-weight: bold;">📸 @lojadovinhoficial</p>
+        </header>
+        <nav class="menu-categorias-horizontal"><div class="scroll-filtros" id="container-filtros-tipo"></div></nav>
+        <div class="area-busca-loja"><input type="text" id="busca-loja" placeholder="🔍 Buscar por nome, uva, produtor, estilo..." oninput="filtrarVitrine(true)"></div>
+
+        <div class="destaque-regionais" id="bloco-regionais">
+            <div class="cabecalho-regionais">
+                <h2>🌵 Sabores do Vale — Produtos Regionais</h2>
+                <p>Os produtos que representam nossa região e são destaque na Loja do Vinho.</p>
+            </div>
+            <section class="vitrine-regionais" id="vitrine-regionais"></section>
+        </div>
+        <div id="status-integracao" class="status-api">Carregando catálogo...</div>
+        <main class="container">
+            <section class="vitrine" id="vitrine-produtos"></section>
+            <aside class="carrinho-container">
+                <h2>Seu Carrinho</h2>
+                <div id="itens-carrinho"><p class="carrinho-vazio">Seu carrinho está vazio.</p></div>
+                <div class="formulario-carrinho">
+                    <div class="campo-carrinho">
+                        <label>🏠 Endereço Completo (Digite a Rua, Número e o seu BAIRRO):</label>
+                        <input type="text" id="cliente-endereco" oninput="processarEnderecoAutomatico()" placeholder="Ex: Centro Juazeiro / Centro Petrolina">
+                        <small id="status-frete-automatico" style="display:block; margin-top:4px; font-weight:bold; color:#777;"></small>
+                    </div>
+                    <div class="campo-carrinho">
+                        <label>🎟️ Cupom de Desconto:</label>
+                        <div style="display: flex; gap: 5px;"><input type="text" id="cliente-cupom" placeholder="Ex: NATAL10"><button type="button" onclick="aplicarCupom()" class="btn-aplicar-cupom">Validar</button></div>
+                        <small id="mensagem-cupom" style="display: block; margin-top: 5px; font-weight: bold;"></small>
+                    </div>
+                </div>
+                <div class="total-container">
+                    <div class="linha-total"><span>Subtotal:</span><span id="valor-subtotal">R$ 0,00</span></div>
+                    <div class="linha-total entrega"><span>Taxa de Entrega:</span><span id="valor-entrega-txt">R$ 0,00</span></div>
+                    <div class="linha-total desconto" id="linha-desconto" style="display: none;"><span>Desconto:</span><span id="valor-desconto">-R$ 0,00</span></div>
+                    <div class="linha-total final"><span>Total Geral:</span><span id="valor-total">R$ 0,00</span></div>
+                </div>
+                <button class="btn-whatsapp" onclick="enviarWhatsApp()">🚀 Finalizar Pedido e Enviar no WhatsApp</button>
+            </aside>
+        </main>
+    </div>
+    <a href="https://wa.me/5574988154699" class="whatsapp-flutuante" target="_blank" rel="noopener">
+        <svg viewBox="0 0 32 32" class="whatsapp-svg"><path d="M16 2a14 14 0 0 0-12.08 21.06L2 29l6.15-1.61A14 14 0 1 0 16 2zm6.94 19.86c-.3.85-1.48 1.57-2.43 1.73-.65.11-1.5.2-4.38-.99a13.3 13.3 0 0 1-5.63-4.96c-.63-.84-1.12-1.81-1.12-2.82 0-2.02 1.06-3 1.44-3.41.3-.33.79-.5 1.27-.5h.41c.3 0 .57.08.79.62.24.59.84 2.05.92 2.21.08.16.14.35.03.57-.11.22-.24.35-.41.54-.16.19-.35.43-.5.59-.16.16-.33.35-.14.68a9.42 9.42 0 0 0 1.71 2.12 8.35 8.35 0 0 0 2.5 1.55c.33.16.51.14.71-.08.19-.22.84-.98 1.06-1.31.22-.33.44-.27.73-.16.3.11 1.91.9 2.24 1.06.33.16.54.24.62.38.08.14.08.82-.22 1.67z"/></svg>
+    </a>
+    <footer><p>&copy; 2026 Loja do Vinho.</p></footer>
+    <script>
+        const ESTOQUE_EMERGENCIA = [
+            { id: 901, nome: "Rio Sol Tempranillo", marca: "Rio Sol", uva: "Tempranillo", estilo: "Tinto Seco", volume: "750ml", preco: 33.00, descricao: "Vinho encorpado produzido no Vale do São Francisco.", foto: "https://tcdn.com.br", tipo: "Vinho" },
+            { id: 902, nome: "Espumante Rio Sol Brut", marca: "Rio Sol", uva: "Blend", estilo: "Brut", volume: "750ml", preco: 45.00, descricao: "Refrescante, frutado e perfeito para celebrações.", foto: "https://tcdn.com.br", tipo: "Espumante" }
+        ];
+        const NUMERO_WHATSAPP = "5574988154699"; const CHAVE_PIX_LOJA = "74988154699 (Celular)"; const PRODUTOS_POR_PAGINA = 40;
+        // Integração: deixe vazio se a API estiver no mesmo domínio do site.
+        // Em produção, coloque aqui a URL HTTPS da API, sem a barra final.
+        const API_BASE_URL = window.LOJA_VINHO_API || "";
+        let catalogoApiAtivo = false;
+        
+        let estoqueLocal = JSON.parse(localStorage.getItem('loja_vinho_estoque')) || [];
+        let bairrosLocal = JSON.parse(localStorage.getItem('loja_vinho_bairros')) || [];
+        let cuponsLocal = JSON.parse(localStorage.getItem('loja_vinho_cupons')) || [];
+        const OPCOES_SISTEMA = JSON.parse(localStorage.getItem('loja_vinho_opcoes')) || { tipo: ["Vinho", "Espumante", "Frisante", "Chopp de Vinho", "Licor", "Suco"] };
+
+        let carrinho = []; let tipoSelecionadoLoja = "Todos"; let taxaEntrega = 0; let bairroDetectado = ""; let limiteAtualExibicao = PRODUTOS_POR_PAGINA;
+        
+        // Objeto global para monitorar o cupom validado no momento
+        let cupomAtivo = { codigo: "", tipo: "", valor: 0 };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if(localStorage.getItem('maior_de_18') === 'sim') { 
+                const modal = document.getElementById('bloqueio-idade'); 
+                if(modal) modal.style.display = 'none'; 
+            }
+            criarFiltrosTipoLoja(); filtrarVitrine(true);
+            carregarCatalogoDaAPI();
+            
+            window.addEventListener('scroll', () => {
+                const limiteScroll = document.body.offsetHeight - 800;
+                if (window.innerHeight + window.scrollY >= limiteScroll) {
+                    const filtrados = obterEstoqueTotal().filter(p => (tipoSelecionadoLoja === "Todos" || p.tipo === tipoSelecionadoLoja));
+                    if (limiteAtualExibicao < filtrados.length) { limiteAtualExibicao += PRODUTOS_POR_PAGINA; filtrarVitrine(false); }
+                }
+            });
+        });
+
+        function confirmarIdade(resposta) { 
+            if(resposta) { localStorage.setItem('maior_de_18', 'sim'); const modal = document.getElementById('bloqueio-idade'); if(modal) modal.style.display = 'none'; } 
+            else { window.location.href = "https://google.com"; } 
+        }
+
+        function processarEnderecoAutomatico() {
+            const enderecoTexto = document.getElementById('cliente-endereco').value.toLowerCase();
+            const statusTxt = document.getElementById('status-frete-automatico');
+            const txtEntrega = document.getElementById('valor-entrega-txt');
+            
+            taxaEntrega = 0;
+            bairroDetectado = "";
+            statusTxt.style.color = "#777";
+            statusTxt.innerText = "Buscando bairro no endereço...";
+
+            if (enderecoTexto.trim().length < 4) {
+                statusTxt.innerText = "";
+                txtEntrega.innerText = "R$ 0,00";
+                atualizarCarrinhoVisual(false);
+                return;
+            }
+
+            let matchBairro = bairrosLocal.find(b => {
+                const nomeLimpo = b.nome.toLowerCase().replace('juazeiro - ', '').replace('petrolina - ', '').trim();
+                return enderecoTexto.includes(nomeLimpo) && nomeLimpo.length > 2;
+            });
+
+            if (matchBairro) {
+                bairroDetectado = matchBairro.nome;
+                taxaEntrega = matchBairro.frete;
+                statusTxt.style.color = "#27ae60";
+                statusTxt.innerText = `✅ Bairro Identificado: ${bairroDetectado}`;
+            } else {
+                statusTxt.style.color = "#c0392b";
+                statusTxt.innerText = "⚠️ Bairro não identificado ou não cadastrado. O frete será combinado no WhatsApp.";
+            }
+            atualizarCarrinhoVisual(false);
+        }
+
+        function aplicarCupom() {
+            const cupomInput = document.getElementById('cliente-cupom');
+            const msgCupom = document.getElementById('mensagem-cupom');
+            const texto = cupomInput ? cupomInput.value.trim().toUpperCase() : '';
+            
+            // Recarrega os cupons mais novos do localStorage
+            cuponsLocal = JSON.parse(localStorage.getItem('loja_vinho_cupons')) || [];
+            const match = cuponsLocal.find(c => c.codigo === texto);
+
+            if (match) {
+                cupomAtivo = { codigo: match.codigo, tipo: match.tipo, valor: match.valor };
+                let txtLabel = match.tipo === 'porcentagem' ? `(${match.valor}%)` : (match.tipo === 'fixo' ? `(R$ ${match.valor.toFixed(2).replace('.', ',')})` : '(Frete Grátis)');
+                if(msgCupom) { msgCupom.style.color = "#27ae60"; msgCupom.innerText = `🎟️ Cupom Válido ${txtLabel}`; }
+            } else {
+                cupomAtivo = { codigo: "", tipo: "", valor: 0 };
+                if(msgCupom) { msgCupom.style.color = "#c0392b"; msgCupom.innerText = "❌ Cupom Inválido"; }
+            }
+            atualizarCarrinhoVisual(false);
+        }
+
+        function obterEstoqueTotal() { let base = ESTOQUE_EMERGENCIA; return [...base, ...estoqueLocal]; }
+
+        function normalizarProdutoAPI(p) {
+            const codigo = String(p.codigo_barras || p.id || '');
+            return {
+                id: codigo || ('p-' + Math.random().toString(36).slice(2)),
+                codigo_barras: codigo,
+                nome: p.nome || 'Produto',
+                preco: Number(p.preco ?? p.preco_varejo ?? 0),
+                tipo: p.categoria || p.tipo || 'Produto',
+                categoria: p.categoria || p.tipo || 'Produto',
+                marca: p.marca || '', uva: p.uva || '', estilo: p.estilo || '', volume: p.volume || '',
+                descricao: p.descricao || 'Produto disponível na Loja do Vinho.',
+                foto: p.foto || '', estoque: Number(p.estoque || 0), regional: !!p.regional
+            };
+        }
+
+        async function carregarCatalogoDaAPI() {
+            const status = document.getElementById('status-integracao');
+            try {
+                const resposta = await fetch(`${API_BASE_URL}/api/produtos?limit=1000`, { cache: 'no-store' });
+                if (!resposta.ok) throw new Error('API indisponível');
+                const dados = await resposta.json();
+                if (!dados.ok || !Array.isArray(dados.produtos)) throw new Error('Resposta inválida');
+                estoqueLocal = dados.produtos.map(normalizarProdutoAPI).filter(p => p.estoque > 0);
+                catalogoApiAtivo = true;
+                if (status) { status.className = 'status-api ok'; status.innerText = `✓ Catálogo conectado ao estoque do PDV • ${estoqueLocal.length} produtos disponíveis`; }
+                const categorias = [...new Set(estoqueLocal.map(p => p.tipo).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+                if (categorias.length) { OPCOES_SISTEMA.tipo = categorias; criarFiltrosTipoLoja(); }
+                filtrarVitrine(true);
+                renderizarRegionais();
+            } catch (erro) {
+                catalogoApiAtivo = false;
+                if (status) { status.className = 'status-api erro'; status.innerText = '⚠️ Catálogo online ainda não conectado à API — usando catálogo local temporário.'; }
+                renderizarRegionais();
+            }
+        }
+
+        function renderizarRegionais() {
+            const area = document.getElementById('vitrine-regionais');
+            const bloco = document.getElementById('bloco-regionais');
+            if (!area) return;
+            const produtos = obterEstoqueTotal().filter(p => p.regional || ['LICOR ARRAIA DO QUIABO','MELAÇO','ARTESANATO'].includes(String(p.categoria || p.tipo || '').toUpperCase())).slice(0, 8);
+            if (!produtos.length) { if (bloco) bloco.style.display='none'; return; }
+            if (bloco) bloco.style.display='block';
+            area.innerHTML = produtos.map(prod => {
+                const id = String(prod.id).replace(/[^a-zA-Z0-9_-]/g,'_');
+                const imgTag = prod.foto ? `<img src="${prod.foto}" class="foto-produto-vitrine" loading="lazy" alt="${String(prod.nome).replace(/"/g,'&quot;')}">` : `<div class="foto-placeholder-vitrine">🌵 Sem Foto</div>`;
+                return `<div class="produto-card card-regional"><span class="selo-regional">🌵 REGIONAL</span><div><span class="vinho-tag">${prod.tipo}</span>${imgTag}<h3>${prod.nome}</h3><p class="preco">R$ ${Number(prod.preco||0).toFixed(2).replace('.', ',')}</p><button class="btn-detalhes" id="btn-detalhes-${id}" onclick="alternarDetalhes('${id}')">👁️ Ver detalhes do rótulo</button><div class="detalhes-expansivel" id="detalhes-${id}"><p>${prod.descricao || 'Produto regional selecionado pela Loja do Vinho.'}</p></div></div><div class="wrapper-botao-compra"><button class="btn-adicionar" onclick="adicionarAoCarrinho('${String(prod.nome).replace(/'/g,"\'")}', ${Number(prod.preco||0)}, '${String(prod.codigo_barras||prod.id).replace(/'/g,"\'")}')">Adicionar</button><div class="seletor-quantidade"><button onclick="alterarQtd('${String(prod.nome).replace(/'/g,"\'")}', -1)">-</button><span>0</span><button onclick="alterarQtd('${String(prod.nome).replace(/'/g,"\'")}', 1)">+</button></div></div></div>`;
+            }).join('');
+        }
+
+        function alternarDetalhes(id) { const painel = document.getElementById(`detalhes-${id}`); const botao = document.getElementById(`btn-detalhes-${id}`); if(!painel || !botao) return; if(painel.style.display === "block") { painel.style.display = "none"; botao.innerText = "👁️ Ver detalhes do rótulo"; } else { painel.style.display = "block"; botao.innerText = "👁️ Ocultar detalhes"; } }
+        function filtrarVitrine(reiniciar = true) {
+            const vitrine = document.getElementById('vitrine-produtos'); if (!vitrine) return; if (reiniciar) { vitrine.innerHTML = ''; limiteAtualExibicao = PRODUTOS_POR_PAGINA; }
+            const buscaInput = document.getElementById('busca-loja'); const termo = buscaInput ? buscaInput.value.toLowerCase() : '';
+            const filtrados = obterEstoqueTotal().filter(p => (tipoSelecionadoLoja === "Todos" || p.tipo === tipoSelecionadoLoja) && ((p.nome || '').toLowerCase().includes(termo) || (p.marca || '').toLowerCase().includes(termo) || (p.uva || '').toLowerCase().includes(termo) || (p.estilo || '').toLowerCase().includes(termo)));
+            vitrine.innerHTML = ''; const limite = Math.min(filtrados.length, limiteAtualExibicao);
+            if (filtrados.length === 0) { vitrine.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #888; padding: 20px;">Nenhum produto encontrado.</p>'; return; }
+            for(let i = 0; i < limite; i++) {
+                const prod = filtrados[i]; const item = carrinho.find(c => c.nome === prod.nome); const qtd = item ? item.quantidade : 0;
+                let classeCard = "produto-card" + (qtd > 0 ? " no-carrinho" : "");
+                const imgTag = prod.foto ? `<img src="${prod.foto}" class="foto-produto-vitrine" alt="${prod.nome}">` : `<div class="foto-placeholder-vitrine">🍷 Sem Foto</div>`;
+                const especificacoes = `<div style="font-size: 0.75rem; color: #666; margin: 4px 0; line-height: 1.3;">${prod.marca ? `<strong>Produtor:</strong> ${prod.marca}<br>` : ''}${prod.uva ? `<strong>Uva:</strong> ${prod.uva}<br>` : ''}${prod.estilo ? `<strong>Estilo:</strong> ${prod.estilo}<br>` : ''}${prod.volume ? `<strong>Volume:</strong> ${prod.volume}` : ''}</div>`;
+                const card = document.createElement('div'); card.className = classeCard;
+                card.innerHTML = `<div><span class="vinho-tag">${prod.tipo}</span>${imgTag}<h3>${prod.nome}</h3>${especificacoes}<p class="preco">R$ ${prod.preco.toFixed(2).replace('.', ',')}</p><button class="btn-detalhes" id="btn-detalhes-${prod.id}" onclick="alternarDetalhes(${prod.id})">👁️ Ver detalhes do rótulo</button><div class="detalhes-expansivel" id="detalhes-${prod.id}"><p>${prod.descricao || 'Sem descrição.'}</p></div></div><div class="wrapper-botao-compra"><button class="btn-adicionar" onclick="adicionarAoCarrinho('${String(prod.nome).replace(/'/g,"\'")}', ${prod.preco}, '${String(prod.codigo_barras||prod.id).replace(/'/g,"\'")}')">Adicionar</button><div class="seletor-quantidade"><button onclick="alterarQtd('${prod.nome}', -1)">-</button><span id="qtd-txt-${prod.id}">${qtd}</span><button onclick="alterarQtd('${prod.nome}', 1)">+</button></div></div>`;
+                vitrine.appendChild(card);
+            }
+        }
+
+        function adicionarAoCarrinho(nome, preco, codigo_barras) { const existente = carrinho.find(c => c.codigo_barras === codigo_barras || c.nome === nome); if (existente) existente.quantidade += 1; else carrinho.push({ nome: nome, preco: preco, codigo_barras: String(codigo_barras || ''), quantidade: 1 }); atualizarCarrinhoVisual(); filtrarVitrine(false); renderizarRegionais(); }
+        function alterarQtd(nome, valor) { const item = carrinho.find(c => c.nome === nome); if(item) { item.quantidade += valor; if(item.quantidade <= 0) carrinho = carrinho.filter(c => c.nome !== nome); } atualizarCarrinhoVisual(); filtrarVitrine(false); }
+
+        function atualizarCarrinhoVisual(recriar = true) {
+            const caixa = document.getElementById('itens-carrinho'); if(recriar && caixa) { caixa.innerHTML = ''; carrinho.forEach(i => { const d = document.createElement('div'); d.className = 'item-no-carrinho'; d.innerHTML = `<div><strong>${i.nome}</strong><br><small>${i.quantidade}x</small></div><span>R$ ${(i.preco * i.quantidade).toFixed(2).replace('.', ',')}</span>`; caixa.appendChild(d); }); if(carrinho.length === 0) caixa.innerHTML = '<p class="carrinho-vazio">Seu carrinho está vazio.</p>'; }
+            let sub = carrinho.reduce((a, b) => a + (b.preco * b.quantidade), 0); let desc = 0; let freteAplicado = taxaEntrega;
+
+            if (cupomAtivo.codigo !== "") {
+                if (cupomAtivo.tipo === 'porcentagem') { desc = sub * (cupomAtivo.valor / 100); } 
+                else if (cupomAtivo.tipo === 'fixo') { desc = cupomAtivo.valor; } 
+                else if (cupomAtivo.tipo === 'frete_gratis') { freteAplicado = 0; }
+            }
+
+            if (desc > sub) desc = sub;
+            let totalGeral = sub - desc + freteAplicado;
+            let totalItens = carrinho.reduce((a, b) => a + b.quantidade, 0);
+            document.getElementById('contador-flutuante').innerText = totalItens;
+
+            document.getElementById('valor-subtotal').innerText = `R$ ${sub.toFixed(2).replace('.', ',')}`;
+            document.getElementById('valor-desconto').innerText = `-R$ ${desc.toFixed(2).replace('.', ',')}`;
+            document.getElementById('linha-desconto').style.display = desc > 0 ? 'flex' : 'none';
+            
+            const txtEntrega = document.getElementById('valor-entrega-txt');
+            const inputEndereco = document.getElementById('cliente-endereco').value.trim();
+
+            if (inputEndereco.length >= 4 && bairroDetectado === "") {
+                txtEntrega.innerText = "A combinar"; document.getElementById('valor-total').innerText = "Calcular no WhatsApp";
+            } else {
+                txtEntrega.innerText = `R$ ${freteAplicado.toFixed(2).replace('.', ',')}`; document.getElementById('valor-total').innerText = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
+            }
+        }
+        // MOTOR MATEMÁTICO: GERA O COPIA E COLA E DESENHA O QR CODE COM VALOR AUTOMÁTICO
+        let linkWhatsAppTemporario = "";
+        let pedidoOnlineAtual = null;
+
+        function pixCampo(tag, valor) {
+            const texto = String(valor);
+            return tag + String(texto.length).padStart(2, '0') + texto;
+        }
+
+        function gerarPixCopiaECola(chave, nome, cidade, valor) {
+            const chaveLimpa = String(chave).replace(/[^0-9A-Za-z+@._-]/g, '');
+            const merchant = pixCampo('00', 'BR.GOV.BCB.PIX') + pixCampo('01', chaveLimpa);
+            let payload = '000201' + pixCampo('26', merchant) + '52040000' + '5303986';
+            payload += pixCampo('54', Number(valor).toFixed(2)) + '5802BR' + pixCampo('59', String(nome).slice(0,25));
+            payload += pixCampo('60', String(cidade).slice(0,15)) + pixCampo('62', pixCampo('05', '***')) + '6304';
+            let crc = 0xFFFF;
+            for (let i = 0; i < payload.length; i++) {
+                crc ^= payload.charCodeAt(i) << 8;
+                for (let j = 0; j < 8; j++) crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF;
+            }
+            return payload + crc.toString(16).toUpperCase().padStart(4, '0');
+        }
+
+        async function criarPedidoOnline(endereco, desconto, frete) {
+            if (!catalogoApiAtivo || !API_BASE_URL) return null;
+            const itens = carrinho.map(i => ({ codigo_barras: i.codigo_barras, quantidade: i.quantidade }));
+            if (itens.some(i => !i.codigo_barras)) throw new Error('Um produto do carrinho não possui código de barras. Atualize o catálogo.');
+            const resposta = await fetch(`${API_BASE_URL}/api/pedidos-online`, {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ itens, cliente: 'Pedido pelo site', endereco, bairro: bairroDetectado, desconto, frete, forma_pagamento: 'PIX' })
+            });
+            const dados = await resposta.json().catch(() => ({}));
+            if (!resposta.ok || !dados.ok) throw new Error(dados.erro || 'Não foi possível registrar o pedido.');
+            return dados;
+        }
+
+        async function enviarWhatsApp() {
+            const end = document.getElementById('cliente-endereco')?.value.trim(); if(!end) { alert("Preencha o seu Endereço Completo!"); return; }
+            if(carrinho.length === 0) { alert("Seu carrinho está vazio!"); return; }
+            
+            let sub = carrinho.reduce((a, b) => a + (b.preco * b.quantidade), 0);
+            let desc = 0; let freteAplicado = taxaEntrega;
+            if (cupomAtivo.codigo !== "") {
+                if (cupomAtivo.tipo === 'porcentagem') desc = sub * (cupomAtivo.valor / 100);
+                else if (cupomAtivo.tipo === 'fixo') desc = cupomAtivo.valor;
+                else if (cupomAtivo.tipo === 'frete_gratis') freteAplicado = 0;
+            }
+            if (desc > sub) desc = sub;
+            let totalGeral = sub - desc + freteAplicado;
+            const valorTotalTexto = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
+
+            try {
+                pedidoOnlineAtual = await criarPedidoOnline(end, desc, freteAplicado);
+            } catch (erro) {
+                pedidoOnlineAtual = null;
+                if (catalogoApiAtivo) { alert(`Não foi possível registrar seu pedido no sistema: ${erro.message}`); return; }
+            }
+
+            let msg = "🍷 *PEDIDO LOJA DO VINHO*\n\n"; carrinho.forEach(i => msg += `• *${i.quantidade}x* ${i.nome}\n`);
+            let resumoCupom = cupomAtivo.codigo !== "" ? `*${cupomAtivo.codigo}*` : "Nenhum";
+            const freteTexto = (bairroDetectado === "" && end.length >= 4) ? "A combinar (Bairro não cadastrado)" : `R$ ${taxaEntrega.toFixed(2).replace('.', ',')}`;
+            
+            msg += `${pedidoOnlineAtual ? `\n🧾 *Pedido nº:* ${pedidoOnlineAtual.pedido_id}` : ""}\n🏠 *Endereço:* ${end}\n📍 *Bairro:* ${bairroDetectado || "Não localizado/A combinar"}\n🚚 *Taxa de Entrega:* ${freteTexto}\n🎟️ *Cupom utilizado:* ${resumoCupom}\n💰 *Total Geral:* ${valorTotalTexto}\n💳 Status: _Aguardando envio do comprovante PIX_`;
+            linkWhatsAppTemporario = `https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(msg)}`;
+            
+            // Limpa o QR Code anterior e desenha o novo dinâmico com o valor exato
+            const containerQr = document.getElementById('container-qrcode-dinamico');
+            if (containerQr) {
+                containerQr.innerHTML = "";
+                const stringPixCompleta = gerarPixCopiaECola(CHAVE_PIX_LOJA, "LOJA DO VINHO", "JUAZEIRO", totalGeral);
+                document.getElementById('chave-copia-input').value = stringPixCompleta;
+                const qr = document.createElement('img');
+                qr.alt = 'QR Code PIX'; qr.width = 220; qr.height = 220; qr.style.display = 'block';
+                qr.src = `${API_BASE_URL || ''}/api/pix/qrcode?valor=${encodeURIComponent(totalGeral.toFixed(2))}`;
+                qr.onerror = () => { containerQr.innerHTML = '<div style="padding:30px;color:#8b0000;font-weight:bold">QR Code indisponível.<br>Use o PIX Copia e Cola abaixo.</div>'; };
+                containerQr.appendChild(qr);
+            }
+
+            document.getElementById('pix-valor-final').innerText = valorTotalTexto;
+            document.getElementById('modal-pagamento-pix').style.display = 'flex';
+        }
+
+        function copiarChavePix() {
+            const campo = document.getElementById('chave-copia-input');
+            campo.select(); campo.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(campo.value);
+            alert("📋 Código PIX Copia e Cola copiado! Abra o app do seu banco e escolha a opção 'PIX Copia e Cola' para pagar com o valor exato.");
+        }
+
+        function concluirEIrParaWhats() {
+            document.getElementById('modal-pagamento-pix').style.display = 'none';
+            if(linkWhatsAppTemporario !== "") window.open(linkWhatsAppTemporario, '_blank');
+            if (pedidoOnlineAtual) {
+                alert(`Pedido nº ${pedidoOnlineAtual.pedido_id} registrado!\n\nO estoque só será baixado após a confirmação do pagamento pela Loja do Vinho.`);
+            }
+        }
+
+        function criarFiltrosTipoLoja() {
+            const c = document.getElementById('container-filtros-tipo'); if(!c) return;
+            let htmlBotoes = '<button class="btn-filtro-tipo" onclick="tipoSelecionadoLoja=\'Todos\'; criarFiltrosTipoLoja(); filtrarVitrine(true)">Todos</button>';
+            OPCOES_SISTEMA.tipo.forEach(t => { htmlBotoes += `<button class="btn-filtro-tipo" onclick="tipoSelecionadoLoja='${t}'; criarFiltrosTipoLoja(); filtrarVitrine(true)">${t}</button>`; });
+            c.innerHTML = htmlBotoes; c.querySelectorAll('.btn-filtro-tipo').forEach(b => { if(b.innerText === tipoSelecionadoLoja) b.classList.add('ativo'); else b.classList.remove('ativo'); });
+        }
+    </script>
+
+    <!-- INSERÇÃO VISUAL DO DESIGN DO MODAL PIX CASO NÃO ESTEJA NO SEU HTML -->
+    <div id="modal-pagamento-pix" class="modal-pix" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 200000;">
+        <div style="background: white; padding: 25px; border-radius: 12px; text-align: center; width: 90%; max-width: 400px; border: 2px solid var(--dourado);">
+            <span style="font-size: 3rem;">📱</span>
+            <h2 style="color: var(--vinho); margin: 5px 0;">Finalize seu Pagamento</h2>
+            <p style="font-size: 0.9rem; color: #555; margin-bottom: 10px;">Escaneie o QR Code abaixo com o app do seu banco. O valor já está preenchido!</p>
+            <div style="background: #f9f9f9; padding: 10px; border-radius: 8px; font-weight: bold; color: var(--vinho); font-size: 1.1rem; margin-bottom: 10px;">
+                Total a Pagar: <span id="pix-valor-final">R$ 0,00</span>
+            </div>
+            <div id="container-qrcode-dinamico" style="background: white; padding: 10px; display: inline-block; margin: 15px auto; border-radius: 8px; border: 1px solid #ddd;"></div>
+            <label style="font-size: 0.75rem; font-weight: bold; color: #444; display: block; text-align: left;">Código PIX Copia e Cola:</label>
+            <input type="text" id="chave-copia-input" readonly style="width: 100%; padding: 8px; font-size: 0.85rem; border: 1px solid #ccc; border-radius: 4px; text-align: center; background: #eee; font-weight: normal;">
+            <button style="background-color: #34495e; color: white; border: none; padding: 10px; font-weight: bold; border-radius: 6px; width: 100%; cursor: pointer; margin-top: 10px; font-size: 0.85rem;" onclick="copiarChavePix()">📋 Copiar Código Copia e Cola</button>
+            <button style="background-color: var(--verde); color: white; border: none; padding: 12px; font-weight: bold; border-radius: 6px; width: 100%; cursor: pointer; margin-top: 15px; font-size: 0.95rem;" onclick="concluirEIrParaWhats()">✅ Já paguei! Enviar Pedido</button>
+        </div>
+    </div>
+
+    <!-- QRCode deve ser carregado por uma biblioteca confiável do seu ambiente de produção. -->
+</body>
+</html>

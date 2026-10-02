@@ -1,0 +1,9 @@
+{
+  "name": "Loja do Vinho",
+  "short_name": "Loja do Vinho",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDFBF7",
+  "theme_color": "#5C061A",
+  "lang": "pt-BR"
+}
